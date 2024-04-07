@@ -1,4 +1,4 @@
-#include "array_stack.h"
+#include "../include/array_stack.h"
 
 template<typename T>
 structures::ArrayStack<T>::ArrayStack() {
