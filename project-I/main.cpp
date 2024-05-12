@@ -42,34 +42,37 @@ template <typename T> class ArrayStack {
     static const auto DEFAULT_SIZE = 10u;
 };
 
-template <typename T> ArrayStack<T>::ArrayStack() {
+template <typename T>
+ArrayStack<T>::ArrayStack() {
     max_size_ = DEFAULT_SIZE;
     contents = new T[max_size_];
     top_ = -1;
 }
 
-template <typename T> ArrayStack<T>::ArrayStack(std::size_t max) {
+template <typename T>
+ArrayStack<T>::ArrayStack(std::size_t max) {
     // COLOQUE SEU CODIGO AQUI...
     max_size_ = max;
     contents = new T[max];
     top_ = -1;
 }
 
-template <typename T> ArrayStack<T>::~ArrayStack() { delete[] contents; }
+template <typename T>
+ArrayStack<T>::~ArrayStack() { delete[] contents; }
 
-template <typename T> void ArrayStack<T>::push(const T& data) {
+template <typename T>
+void ArrayStack<T>::push(const T& data) {
     if (full()) {
         throw std::out_of_range("pilha cheia");
     } else {
         // COLOQUE SEU CODIGO AQUI...
         top_++;
         contents[top_] = data;
-        for (int i = 0; i < size; i++) {
-        }
     }
 }
 
-template <typename T> T ArrayStack<T>::pop() {
+template <typename T>
+T ArrayStack<T>::pop() {
     // COLOQUE SEU CODIGO AQUI...
     if (top_ == -1) {
         throw std::out_of_range("pilha vazia");
@@ -78,43 +81,41 @@ template <typename T> T ArrayStack<T>::pop() {
     return contents[top_ + 1];
 }
 
-template <typename T> T& ArrayStack<T>::top() {
+template <typename T>
+T& ArrayStack<T>::top() {
     // COLOQUE SEU CODIGO AQUI...
     return contents[top_];
 }
 
-template <typename T> void ArrayStack<T>::clear() {
+template <typename T>
+void ArrayStack<T>::clear() {
     // COLOQUE SEU CODIGO AQUI...
     top_ = -1;
 }
 
-template <typename T> std::size_t ArrayStack<T>::size() {
+template <typename T>
+std::size_t ArrayStack<T>::size() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ + 1;
 }
 
-template <typename T> std::size_t ArrayStack<T>::max_size() {
+template <typename T>
+std::size_t ArrayStack<T>::max_size() {
     // COLOQUE SEU CODIGO AQUI...
     return max_size_;
 }
 
-template <typename T> bool ArrayStack<T>::empty() {
+template <typename T>
+bool ArrayStack<T>::empty() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ == -1;
 }
 
-template <typename T> bool ArrayStack<T>::full() {
+template <typename T>
+bool ArrayStack<T>::full() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ + 1 == static_cast<int>(max_size_);
 }
-
-/* template <typename T> */
-/* void ArrayStack<T>::print() { */
-/*     for (int i = 0; i < top_; i++) { */
-/*         std::cout << contents[i]. << ", "; */
-/*     } */
-/*     std::cout << contents[top_] << '\n'; */
-/* } */
 
 class XmlParser {
   public:
@@ -148,13 +149,14 @@ class XmlParser {
         std::ifstream xmlFile(xmlPath);
         std::istream_iterator<char> iter(xmlFile), end;
 
-        struct context {
+        struct Context {
+            Context& operator=(const Context& other);
             XmlNode node;
-            std::istream_iterator<char> openingIter;
+            std::istream_iterator<char> tagOpening;
         };
 
         XmlTree root;
-        ArrayStack<context> stack;
+        ArrayStack<Context> stack;
         std::string currentTag;
         std::string content;
         bool toReadContent = false;
@@ -163,7 +165,6 @@ class XmlParser {
         while (!stack.empty() && iter != end) {
             if (*iter == '<') {
                 if (*(++iter) == '/') {
-                    std::istream_iterator<char> closingIter = iter;
                     iter++;
                     std::string tag = readTag(&iter);
                     if (tag != stack.top().node.getTag()) {
@@ -171,35 +172,39 @@ class XmlParser {
                     }
 
                     stack.pop();
+                    stack.print();
                 } else {
                     std::string tag = readTag(&iter);
                     stack.push({XmlNode(tag), iter});
+                    stack.print();
                 }
             }
             iter++;
         }
 
-        while (iter != end) {
-            if (*iter == '<') {
-                if (*(++iter) == '/') {
-                    if (stack.empty()) {
-                        throw std::runtime_error("Invalid XML");
-                    }
-
-                    iter++;
-                    std::string tag = readTag(&iter);
-                    if (tag != stack.top()) {
-                        throw std::runtime_error("Invalid XML");
-                    }
-
-                    stack.pop();
-                } else {
-                    std::string tag = readTag(&iter);
-                    stack.push(tag);
-                }
-            }
-            iter++;
-        }
+        /* while (iter != end) { */
+        /*     if (*iter == '<') { */
+        /*         if (*(++iter) == '/') { */
+        /*             if (stack.empty()) { */
+        /*                 throw std::runtime_error("Invalid XML"); */
+        /*             } */
+        /**/
+        /*             iter++; */
+        /*             std::string tag = readTag(&iter); */
+        /*             if (tag != stack.top().node.tag) { */
+        /*                 throw std::runtime_error("Invalid XML"); */
+        /*             } */
+        /**/
+        /*             stack.pop(); */
+        /*             stack.print(); */
+        /*         } else { */
+        /*             std::string tag = readTag(&iter); */
+        /*             stack.push(tag); */
+        /*             stack.print(); */
+        /*         } */
+        /*     } */
+        /*     iter++; */
+        /* } */
 
         if (!stack.empty()) {
             throw std::runtime_error("Invalid XML");
