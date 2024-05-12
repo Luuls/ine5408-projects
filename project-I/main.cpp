@@ -1,15 +1,14 @@
+#include <cstdint> // std::size_t
+#include <fstream>
 #include <iostream>
 #include <istream>
-#include <fstream>
 #include <iterator>
+#include <stdexcept> // C++ exceptions
 #include <string>
 #include <vector>
-#include <cstdint>  // std::size_t
-#include <stdexcept>  // C++ exceptions
 
-template<typename T>
-class ArrayStack {
-public:
+template <typename T> class ArrayStack {
+  public:
     //! construtor simples
     ArrayStack();
     //! construtor com parametro tamanho
@@ -35,7 +34,7 @@ public:
 
     void print();
 
-private:
+  private:
     T* contents;
     int top_;
     std::size_t max_size_;
@@ -43,40 +42,34 @@ private:
     static const auto DEFAULT_SIZE = 10u;
 };
 
-
-template<typename T>
-ArrayStack<T>::ArrayStack() {
+template <typename T> ArrayStack<T>::ArrayStack() {
     max_size_ = DEFAULT_SIZE;
     contents = new T[max_size_];
     top_ = -1;
 }
 
-template<typename T>
-ArrayStack<T>::ArrayStack(std::size_t max) {
+template <typename T> ArrayStack<T>::ArrayStack(std::size_t max) {
     // COLOQUE SEU CODIGO AQUI...
     max_size_ = max;
     contents = new T[max];
     top_ = -1;
 }
 
-template<typename T>
-ArrayStack<T>::~ArrayStack() {
-    delete [] contents;
-}
+template <typename T> ArrayStack<T>::~ArrayStack() { delete[] contents; }
 
-template<typename T>
-void ArrayStack<T>::push(const T& data) {
+template <typename T> void ArrayStack<T>::push(const T& data) {
     if (full()) {
         throw std::out_of_range("pilha cheia");
     } else {
         // COLOQUE SEU CODIGO AQUI...
         top_++;
         contents[top_] = data;
+        for (int i = 0; i < size; i++) {
+        }
     }
 }
 
-template<typename T>
-T ArrayStack<T>::pop() {
+template <typename T> T ArrayStack<T>::pop() {
     // COLOQUE SEU CODIGO AQUI...
     if (top_ == -1) {
         throw std::out_of_range("pilha vazia");
@@ -85,68 +78,63 @@ T ArrayStack<T>::pop() {
     return contents[top_ + 1];
 }
 
-template<typename T>
-T& ArrayStack<T>::top() {
+template <typename T> T& ArrayStack<T>::top() {
     // COLOQUE SEU CODIGO AQUI...
     return contents[top_];
 }
 
-template<typename T>
-void ArrayStack<T>::clear() {
+template <typename T> void ArrayStack<T>::clear() {
     // COLOQUE SEU CODIGO AQUI...
     top_ = -1;
 }
 
-template<typename T>
-std::size_t ArrayStack<T>::size() {
+template <typename T> std::size_t ArrayStack<T>::size() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ + 1;
 }
 
-template<typename T>
-std::size_t ArrayStack<T>::max_size() {
+template <typename T> std::size_t ArrayStack<T>::max_size() {
     // COLOQUE SEU CODIGO AQUI...
     return max_size_;
 }
 
-template<typename T>
-bool ArrayStack<T>::empty() {
+template <typename T> bool ArrayStack<T>::empty() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ == -1;
 }
 
-template<typename T>
-bool ArrayStack<T>::full() {
+template <typename T> bool ArrayStack<T>::full() {
     // COLOQUE SEU CODIGO AQUI...
     return top_ + 1 == static_cast<int>(max_size_);
 }
 
-template<typename T>
-void ArrayStack<T>::print() {
-    for (int i = 0; i < top_; i++) {
-        std::cout << contents[i] << ", ";
-    }
-    std::cout << contents[top_] << '\n';
-}
+/* template <typename T> */
+/* void ArrayStack<T>::print() { */
+/*     for (int i = 0; i < top_; i++) { */
+/*         std::cout << contents[i]. << ", "; */
+/*     } */
+/*     std::cout << contents[top_] << '\n'; */
+/* } */
 
 class XmlParser {
-public:
+  public:
     class XmlNode {
-    public:
-        XmlNode(const std::string& tag, const std::string& content, const std::vector<XmlNode>& children):
-            tag(tag), content(content), children(children) {}
+      public:
+        XmlNode(const std::string& tag = "") : tag(tag) {}
 
-        XmlNode(const std::string& tag): tag(tag) {}
+        void addChild(XmlNode& child) { children.push_back(child); }
 
-        void addChild(XmlNode& child) {
-            children.push_back(child);
-        }
+        void setContent(const std::string& content) { this->content = content; }
 
-        void addContent(const std::string& content) {
-            this->content = content;
-        }
+        std::vector<XmlNode> getChildren() const { return this->children; }
 
-    private:
+        std::string getTag() const { return this->tag; }
+
+      private:
+        XmlNode(const std::string& tag, const std::string& content,
+                const std::vector<XmlNode>& children)
+            : tag(tag), content(content), children(children) {}
+
         friend class XmlParser;
 
         const std::string tag;
@@ -154,8 +142,80 @@ public:
         std::vector<XmlNode> children;
     };
 
+    typedef XmlNode XmlTree;
 
-    XmlParser(const std::string& filePath) {
+    static void parse(const std::string& xmlPath) {
+        std::ifstream xmlFile(xmlPath);
+        std::istream_iterator<char> iter(xmlFile), end;
+
+        struct context {
+            XmlNode node;
+            std::istream_iterator<char> openingIter;
+        };
+
+        XmlTree root;
+        ArrayStack<context> stack;
+        std::string currentTag;
+        std::string content;
+        bool toReadContent = false;
+
+        // lê caractere por caractere
+        while (!stack.empty() && iter != end) {
+            if (*iter == '<') {
+                if (*(++iter) == '/') {
+                    std::istream_iterator<char> closingIter = iter;
+                    iter++;
+                    std::string tag = readTag(&iter);
+                    if (tag != stack.top().node.getTag()) {
+                        throw std::runtime_error("Invalid XML");
+                    }
+
+                    stack.pop();
+                } else {
+                    std::string tag = readTag(&iter);
+                    stack.push({XmlNode(tag), iter});
+                }
+            }
+            iter++;
+        }
+
+        while (iter != end) {
+            if (*iter == '<') {
+                if (*(++iter) == '/') {
+                    if (stack.empty()) {
+                        throw std::runtime_error("Invalid XML");
+                    }
+
+                    iter++;
+                    std::string tag = readTag(&iter);
+                    if (tag != stack.top()) {
+                        throw std::runtime_error("Invalid XML");
+                    }
+
+                    stack.pop();
+                } else {
+                    std::string tag = readTag(&iter);
+                    stack.push(tag);
+                }
+            }
+            iter++;
+        }
+
+        if (!stack.empty()) {
+            throw std::runtime_error("Invalid XML");
+        }
+
+        /* return root; */
+    }
+
+  private:
+    static std::string readTag(std::istream_iterator<char>* iter) {
+        std::string tag;
+        while (**iter != '>') {
+            tag += **iter;
+            (*iter)++;
+        }
+        return tag;
     }
 };
 
@@ -164,48 +224,8 @@ int main() {
     std::cin >> xmlPath;
     std::cout << xmlPath << '\n';
 
-    std::ifstream xmlFile(xmlPath);
-    std::istream_iterator<char> iter(xmlFile), end;
-
-    ArrayStack<std::string> stack;
-    /* XmlParser::XmlNode root("root"); */
-    /* stack.push("root"); */
-
-    // lê caractere por caractere
-    while (iter != end) {
-        if (*iter == '<') {
-            if (*(++iter) == '/') {
-                if (stack.empty()) {
-                    throw std::runtime_error("Invalid XML");
-                }
-
-                iter++;
-                std::string tag;
-                while (*iter != '>') {
-                    tag += *iter;
-                    iter++;
-                }
-
-                if (tag != stack.top()) {
-                    throw std::runtime_error("Invalid XML");
-                }
-
-                stack.pop();
-                stack.print();
-            }
-            else {
-                std::string tag;
-                while (*iter != '>') {
-                    tag += *iter;
-                    iter++;
-                }
-
-                stack.push(tag);
-                stack.print();
-            }
-        }
-        iter++;
-    }
+    XmlParser::XmlTree xml = XmlParser::parse(xmlPath);
+    XmlParser::parse(xmlPath);
 
     return 0;
 }
