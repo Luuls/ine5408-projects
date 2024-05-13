@@ -127,6 +127,8 @@ void ArrayStack<T>::print() {
 
 class XmlParser {
   public:
+    // TODO: criar um nó abstrato para criar dois tipos de nós: um para apenas 1 nó
+    // e outro para representar vários filhos. Exemplo: XmlElement e XmlElementCollection
     class XmlNode {
       public:
         XmlNode(const std::string& tag = "") : tag(tag) {}
@@ -144,6 +146,21 @@ class XmlParser {
             return *this;
         }
 
+        std::vector<XmlNode> operator[](const std::string& tag) {
+            std::vector<XmlNode> nodes;
+            for (auto& child : children) {
+                if (child.getTag() == tag) {
+                    nodes.push_back(child);
+                }
+            }
+
+            if (nodes.size() > 0) {
+                return nodes;
+            }
+
+            std::string msg = "Tag not found: " + tag;
+            throw std::runtime_error(msg);
+        }
 
         void addChild(XmlNode& child) { children.push_back(child); }
 
@@ -176,45 +193,41 @@ class XmlParser {
         std::string::iterator iter = xmlContent.begin();
         std::string::iterator end = xmlContent.end();
 
+        // struct local para armazenar o contexto de cada tag
         struct Context {
-            void print() {
-                std::cout << this->node.getTag() << ' ';
-            }
-
             XmlNode node;
             std::string::iterator contentBegin;
         };
 
         XmlTree root;
         ArrayStack<Context> stack;
-        std::string currentTag;
-        std::string content;
 
         // lê caractere por caractere
         while (iter != end) {
             if (*iter == '<') {
+                // caso seja uma tag de fechamento
                 if (*(++iter) == '/') {
+                    // o fim do conteúdo da tag que está fechando é em '<'
                     std::string::iterator contentEnd = iter - 1;
                     iter++;
+
                     std::string tag = readTag(&iter);
-                    if (tag != stack.top().node.getTag()) {
+                    if (stack.empty() || tag != stack.top().node.getTag()) {
                         throw std::runtime_error("Invalid XML");
                     }
 
                     Context current = stack.pop();
                     std::string content(readContent(current.contentBegin, contentEnd));
                     current.node.setContent(content);
-                    std::cout << "Content of " << current.node.getTag() << ": " << current.node.getContent() << '\n';
                     if (stack.empty()){
                         root = current.node;
-                        break;
+                    } else {
+                        // FIX: Precisa checar se a tag atual vai ter mais de 1 filho
+                        stack.top().node.addChild(current.node);
                     }
-                    stack.top().node.addChild(current.node);
-                    stack.print();
                 } else {
                     std::string tag = readTag(&iter);
                     stack.push({XmlNode(tag), ++iter});
-                    stack.print();
                     continue;
                 }
             }
@@ -238,6 +251,8 @@ class XmlParser {
         return tag;
     }
 
+    // Utilizado para ler o conteúdo dentro de uma tag, a partir de iteradores
+    // que apontam para o começo e para o fim do conteúdo.
     static std::string readContent(std::string::iterator contentBegin,
                                    std::string::iterator contentEnd) {
         std::string content{""};
@@ -258,6 +273,14 @@ int main(int argc, char* argv[]) {
     std::cout << xmlPath << '\n';
 
     XmlParser::XmlTree xml = XmlParser::parse(xmlPath);
+    for (auto& cenario : xml["cenario"]) {
+        // TODO: deveria ser utilizado da seguinte forma:
+        // XmlElement& name = cenario["nome"];
+        // ao invés de um for, já que a tag cenário só possui um nome
+        for (auto& nome : cenario["nome"]) {
+            std::cout << nome.getTag() << ": " << nome.getContent() << '\n';
+        }
+    }
 
     return 0;
 }
