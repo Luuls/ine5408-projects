@@ -117,13 +117,37 @@ bool ArrayStack<T>::full() {
     return top_ + 1 == static_cast<int>(max_size_);
 }
 
+template <typename T>
+void ArrayStack<T>::print() {
+    for (int i = 0; i <= top_; i++) {
+        contents[i].print();
+    }
+    std::cout << std::endl;
+}
+
 class XmlParser {
   public:
     class XmlNode {
       public:
         XmlNode(const std::string& tag = "") : tag(tag) {}
+        XmlNode(const XmlNode& other) : tag(other.tag), content(other.content) {
+            for (const auto& child : other.children) {
+                children.push_back(child);
+            }
+        }
+        XmlNode& operator=(const XmlNode& other) {
+            if (this != &other) {
+                this->tag = other.getTag();
+                this->content = other.content;
+                this->children = other.children;
+            }
+            return *this;
+        }
+
 
         void addChild(XmlNode& child) { children.push_back(child); }
+
+        std::string getContent() const { return this->content; }
 
         void setContent(const std::string& content) { this->content = content; }
 
@@ -138,99 +162,102 @@ class XmlParser {
 
         friend class XmlParser;
 
-        const std::string tag;
+        std::string tag;
         std::string content;
         std::vector<XmlNode> children;
     };
 
     typedef XmlNode XmlTree;
 
-    static void parse(const std::string& xmlPath) {
+    static XmlTree parse(const std::string& xmlPath) {
         std::ifstream xmlFile(xmlPath);
-        std::istream_iterator<char> iter(xmlFile), end;
+        std::istream_iterator<char> iterFile(xmlFile), endFile;
+        std::string xmlContent(iterFile, endFile);
+        std::string::iterator iter = xmlContent.begin();
+        std::string::iterator end = xmlContent.end();
 
         struct Context {
-            Context& operator=(const Context& other);
+            void print() {
+                std::cout << this->node.getTag() << ' ';
+            }
+
             XmlNode node;
-            std::istream_iterator<char> tagOpening;
+            std::string::iterator contentBegin;
         };
 
         XmlTree root;
         ArrayStack<Context> stack;
         std::string currentTag;
         std::string content;
-        bool toReadContent = false;
 
         // lê caractere por caractere
-        while (!stack.empty() && iter != end) {
+        while (iter != end) {
             if (*iter == '<') {
                 if (*(++iter) == '/') {
+                    std::string::iterator contentEnd = iter - 1;
                     iter++;
                     std::string tag = readTag(&iter);
                     if (tag != stack.top().node.getTag()) {
                         throw std::runtime_error("Invalid XML");
                     }
 
-                    stack.pop();
+                    Context current = stack.pop();
+                    std::string content(readContent(current.contentBegin, contentEnd));
+                    current.node.setContent(content);
+                    std::cout << "Content of " << current.node.getTag() << ": " << current.node.getContent() << '\n';
+                    if (stack.empty()){
+                        root = current.node;
+                        break;
+                    }
+                    stack.top().node.addChild(current.node);
                     stack.print();
                 } else {
                     std::string tag = readTag(&iter);
-                    stack.push({XmlNode(tag), iter});
+                    stack.push({XmlNode(tag), ++iter});
                     stack.print();
+                    continue;
                 }
             }
             iter++;
         }
 
-        /* while (iter != end) { */
-        /*     if (*iter == '<') { */
-        /*         if (*(++iter) == '/') { */
-        /*             if (stack.empty()) { */
-        /*                 throw std::runtime_error("Invalid XML"); */
-        /*             } */
-        /**/
-        /*             iter++; */
-        /*             std::string tag = readTag(&iter); */
-        /*             if (tag != stack.top().node.tag) { */
-        /*                 throw std::runtime_error("Invalid XML"); */
-        /*             } */
-        /**/
-        /*             stack.pop(); */
-        /*             stack.print(); */
-        /*         } else { */
-        /*             std::string tag = readTag(&iter); */
-        /*             stack.push(tag); */
-        /*             stack.print(); */
-        /*         } */
-        /*     } */
-        /*     iter++; */
-        /* } */
-
         if (!stack.empty()) {
             throw std::runtime_error("Invalid XML");
         }
 
-        /* return root; */
+        return root;
     }
 
   private:
-    static std::string readTag(std::istream_iterator<char>* iter) {
-        std::string tag;
+    static std::string readTag(std::string::iterator* iter) {
+        std::string tag{""};
         while (**iter != '>') {
             tag += **iter;
             (*iter)++;
         }
         return tag;
     }
+
+    static std::string readContent(std::string::iterator contentBegin,
+                                   std::string::iterator contentEnd) {
+        std::string content{""};
+        while (contentBegin != contentEnd) {
+            content += *contentBegin;
+            ++contentBegin;
+        }
+        return content;
+    }
 };
 
-int main() {
-    std::string xmlPath;
-    std::cin >> xmlPath;
+int main(int argc, char* argv[]) {
+    if (argc == 1) {
+        std::cerr << "Usage: " << argv[0] << " <xml_path>\n";
+        return 1;
+    }
+    std::string xmlPath = argv[1];
     std::cout << xmlPath << '\n';
 
     XmlParser::XmlTree xml = XmlParser::parse(xmlPath);
-    XmlParser::parse(xmlPath);
 
     return 0;
 }
