@@ -264,22 +264,76 @@ class XmlParser {
     }
 };
 
+/* class Solver { */
+/**/
+/* } */
+
 int main(int argc, char* argv[]) {
     if (argc == 1) {
         std::cerr << "Usage: " << argv[0] << " <xml_path>\n";
         return 1;
     }
     std::string xmlPath = argv[1];
-    std::cout << xmlPath << '\n';
 
     XmlParser::XmlTree xml = XmlParser::parse(xmlPath);
-    for (auto& cenario : xml["cenario"]) {
-        // TODO: deveria ser utilizado da seguinte forma:
-        // XmlElement& name = cenario["nome"];
-        // ao invés de um for, já que a tag cenário só possui um nome
-        for (auto& nome : cenario["nome"]) {
-            std::cout << nome.getTag() << ": " << nome.getContent() << '\n';
+    for (auto& scenario : xml["cenario"]) {
+        int width = std::stoi(scenario["dimensoes"][0]["largura"][0].getContent());
+        int height = std::stoi(scenario["dimensoes"][0]["altura"][0].getContent());
+
+        // a matriz vem do xml como uma string unidimensional.
+        // Portanto, transforma-se-a em uma matriz bidimensional antes de
+        // computar a área varrida pelo robô
+        std::string xmlMatrix = scenario["matriz"][0].getContent();
+        std::vector<std::vector<int>> matrix(height);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                matrix[i].push_back(xmlMatrix[i* width + j] - '0');
+            }
         }
+
+        struct Coordinate {
+            void print() {
+                std::cout << '(' << x << ", " << y << ") ";
+            }
+            int x;
+            int y;
+        };
+
+        int robotX = std::stoi(scenario["robo"][0]["y"][0].getContent());
+        int robotY = std::stoi(scenario["robo"][0]["x"][0].getContent());
+        Coordinate robotPos = {robotX - 1, robotY - 1};
+
+        ArrayStack<Coordinate> cellsToVisit(50);
+        int totalArea = 0;
+
+        std::cout << "width: " << matrix[0].size() << " height: " << matrix.size() << '\n';
+        while (true) {
+            std::cout << "x: " << robotPos.x << " y: " << robotPos.y << '\n';
+            if (matrix[robotPos.x][robotPos.y] == 1) {
+                totalArea++;
+                matrix[robotPos.x][robotPos.y] = 0;
+            }
+
+            for (int offset = -1; offset <= 1; offset += 2) {
+                if (robotPos.x + offset >= width || robotPos.x + offset >= height) {
+                    continue;
+                }
+                if (matrix[robotPos.x + offset][robotPos.y] == 1) {
+                    cellsToVisit.push({robotPos.x + offset, robotPos.y});
+                }
+                if (matrix[robotPos.x][robotPos.y + offset] == 1) {
+                    cellsToVisit.push({robotPos.x, robotPos.y + offset});
+                }
+            }
+
+            if (cellsToVisit.empty()) {
+                break;
+            }
+
+            robotPos = cellsToVisit.pop();
+        }
+
+        std::cout << totalArea << "\n\n";
     }
 
     return 0;
