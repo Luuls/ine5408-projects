@@ -1,3 +1,5 @@
+// Copyright [2024] <Caio César Rodrigues de Aquino, Luan da Silva Moraes>
+
 #include <cstdint> // std::size_t
 #include <fstream>
 #include <iostream>
