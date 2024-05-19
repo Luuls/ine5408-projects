@@ -123,25 +123,25 @@ class XmlParser {
     // e outro para representar vários filhos. Exemplo: XmlElement e XmlElementCollection
     class XmlNode {
       public:
-        XmlNode(const std::string& tag = "") : tag(tag) {}
-        XmlNode(const XmlNode& other) : tag(other.tag), content(other.content) {
+        XmlNode(const std::string& identifier = "") : identifier(identifier) {}
+        XmlNode(const XmlNode& other) : identifier(other.identifier), content(other.content) {
             for (const auto& child : other.children) {
                 children.push_back(child);
             }
         }
         XmlNode& operator=(const XmlNode& other) {
             if (this != &other) {
-                this->tag = other.getTag();
+                this->identifier = other.getIdentifier();
                 this->content = other.content;
                 this->children = other.children;
             }
             return *this;
         }
 
-        std::vector<XmlNode> operator[](const std::string& tag) {
+        std::vector<XmlNode> operator[](const std::string& identifier) {
             std::vector<XmlNode> nodes;
             for (auto& child : children) {
-                if (child.getTag() == tag) {
+                if (child.getIdentifier() == identifier) {
                     nodes.push_back(child);
                 }
             }
@@ -150,7 +150,7 @@ class XmlParser {
                 return nodes;
             }
 
-            std::string msg = "Tag not found: " + tag;
+            std::string msg = "Identifier not found: " + identifier;
             throw std::runtime_error(msg);
         }
 
@@ -162,16 +162,16 @@ class XmlParser {
 
         std::vector<XmlNode> getChildren() const { return this->children; }
 
-        std::string getTag() const { return this->tag; }
+        std::string getIdentifier() const { return this->identifier; }
 
       private:
-        XmlNode(const std::string& tag, const std::string& content,
+        XmlNode(const std::string& identifier, const std::string& content,
                 const std::vector<XmlNode>& children)
-            : tag(tag), content(content), children(children) {}
+            : identifier(identifier), content(content), children(children) {}
 
         friend class XmlParser;
 
-        std::string tag;
+        std::string identifier;
         std::string content;
         std::vector<XmlNode> children;
     };
@@ -203,8 +203,8 @@ class XmlParser {
                     std::string::iterator contentEnd = iter - 1;
                     iter++;
 
-                    std::string tag = readTag(&iter);
-                    if (stack.empty() || tag != stack.top().node.getTag()) {
+                    std::string identifier = readIdentifier(&iter);
+                    if (stack.empty() || identifier != stack.top().node.getIdentifier()) {
                         throw std::runtime_error("Invalid XML");
                     }
 
@@ -217,8 +217,8 @@ class XmlParser {
                         stack.top().node.addChild(current.node);
                     }
                 } else {
-                    std::string tag = readTag(&iter);
-                    stack.push({XmlNode(tag), ++iter});
+                    std::string identifier = readIdentifier(&iter);
+                    stack.push({XmlNode(identifier), ++iter});
                     continue;
                 }
             }
@@ -233,13 +233,13 @@ class XmlParser {
     }
 
   private:
-    static std::string readTag(std::string::iterator* iter) {
-        std::string tag{""};
+    static std::string readIdentifier(std::string::iterator* iter) {
+        std::string identifier{""};
         while (**iter != '>') {
-            tag += **iter;
+            identifier += **iter;
             (*iter)++;
         }
-        return tag;
+        return identifier;
     }
 
     // Utilizado para ler o conteúdo dentro de uma tag, a partir de iteradores
