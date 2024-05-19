@@ -52,7 +52,6 @@ ArrayStack<T>::ArrayStack() {
 
 template <typename T>
 ArrayStack<T>::ArrayStack(std::size_t max) {
-    // COLOQUE SEU CODIGO AQUI...
     max_size_ = max;
     contents = new T[max];
     top_ = -1;
@@ -66,7 +65,6 @@ void ArrayStack<T>::push(const T& data) {
     if (full()) {
         throw std::out_of_range("pilha cheia");
     } else {
-        // COLOQUE SEU CODIGO AQUI...
         top_++;
         contents[top_] = data;
     }
@@ -74,7 +72,6 @@ void ArrayStack<T>::push(const T& data) {
 
 template <typename T>
 T ArrayStack<T>::pop() {
-    // COLOQUE SEU CODIGO AQUI...
     if (top_ == -1) {
         throw std::out_of_range("pilha vazia");
     }
@@ -84,37 +81,31 @@ T ArrayStack<T>::pop() {
 
 template <typename T>
 T& ArrayStack<T>::top() {
-    // COLOQUE SEU CODIGO AQUI...
     return contents[top_];
 }
 
 template <typename T>
 void ArrayStack<T>::clear() {
-    // COLOQUE SEU CODIGO AQUI...
     top_ = -1;
 }
 
 template <typename T>
 std::size_t ArrayStack<T>::size() {
-    // COLOQUE SEU CODIGO AQUI...
     return top_ + 1;
 }
 
 template <typename T>
 std::size_t ArrayStack<T>::max_size() {
-    // COLOQUE SEU CODIGO AQUI...
     return max_size_;
 }
 
 template <typename T>
 bool ArrayStack<T>::empty() {
-    // COLOQUE SEU CODIGO AQUI...
     return top_ == -1;
 }
 
 template <typename T>
 bool ArrayStack<T>::full() {
-    // COLOQUE SEU CODIGO AQUI...
     return top_ + 1 == static_cast<int>(max_size_);
 }
 
