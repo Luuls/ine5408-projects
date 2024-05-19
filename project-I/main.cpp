@@ -6,7 +6,6 @@
 #include <stdexcept> // C++ exceptions
 #include <string>
 #include <vector>
-#include <array>
 
 template <typename T> class ArrayStack {
   public:
@@ -117,67 +116,67 @@ void ArrayStack<T>::print() {
     std::cout << std::endl;
 }
 
+class XmlTree {
+    public:
+    XmlTree() = default;
+
+    XmlTree(const XmlTree& other) : identifier(other.identifier), content(other.content) {
+        for (const auto& child : other.children) {
+            children.push_back(child);
+        }
+    }
+
+    XmlTree& operator=(const XmlTree& other) {
+        if (this != &other) {
+            this->identifier = other.getIdentifier();
+            this->content = other.content;
+            this->children = other.children;
+        }
+        return *this;
+    }
+
+    std::vector<XmlTree> operator[](const std::string& identifier) {
+        std::vector<XmlTree> nodes;
+        for (auto& child : children) {
+            if (child.getIdentifier() == identifier) {
+                nodes.push_back(child);
+            }
+        }
+
+        if (nodes.size() > 0) {
+            return nodes;
+        }
+
+        std::string msg = "Identifier not found: " + identifier;
+        throw std::runtime_error(msg);
+    }
+
+    void addChild(XmlTree& child) { children.push_back(child); }
+
+    std::string getContent() const { return this->content; }
+
+    void setContent(const std::string& content) { this->content = content; }
+
+    std::vector<XmlTree> getChildren() const { return this->children; }
+
+    std::string getIdentifier() const { return this->identifier; }
+
+  private:
+    friend class XmlParser;
+
+    XmlTree(const std::string& identifier) : identifier(identifier) {}
+
+    XmlTree(const std::string& identifier, const std::string& content,
+            const std::vector<XmlTree>& children)
+        : identifier(identifier), content(content), children(children) {}
+
+    std::string identifier;
+    std::string content;
+    std::vector<XmlTree> children;
+};
+
 class XmlParser {
   public:
-    // TODO: criar um nó abstrato para criar dois tipos de nós: um para apenas 1 nó
-    // e outro para representar vários filhos. Exemplo: XmlElement e XmlElementCollection
-    class XmlNode {
-      public:
-        XmlNode(const std::string& identifier = "") : identifier(identifier) {}
-        XmlNode(const XmlNode& other) : identifier(other.identifier), content(other.content) {
-            for (const auto& child : other.children) {
-                children.push_back(child);
-            }
-        }
-        XmlNode& operator=(const XmlNode& other) {
-            if (this != &other) {
-                this->identifier = other.getIdentifier();
-                this->content = other.content;
-                this->children = other.children;
-            }
-            return *this;
-        }
-
-        std::vector<XmlNode> operator[](const std::string& identifier) {
-            std::vector<XmlNode> nodes;
-            for (auto& child : children) {
-                if (child.getIdentifier() == identifier) {
-                    nodes.push_back(child);
-                }
-            }
-
-            if (nodes.size() > 0) {
-                return nodes;
-            }
-
-            std::string msg = "Identifier not found: " + identifier;
-            throw std::runtime_error(msg);
-        }
-
-        void addChild(XmlNode& child) { children.push_back(child); }
-
-        std::string getContent() const { return this->content; }
-
-        void setContent(const std::string& content) { this->content = content; }
-
-        std::vector<XmlNode> getChildren() const { return this->children; }
-
-        std::string getIdentifier() const { return this->identifier; }
-
-      private:
-        XmlNode(const std::string& identifier, const std::string& content,
-                const std::vector<XmlNode>& children)
-            : identifier(identifier), content(content), children(children) {}
-
-        friend class XmlParser;
-
-        std::string identifier;
-        std::string content;
-        std::vector<XmlNode> children;
-    };
-
-    typedef XmlNode XmlTree;
-
     static XmlTree parse(const std::string& xmlPath) {
         std::ifstream xmlFile(xmlPath);
         std::istream_iterator<char> iterFile(xmlFile), endFile;
@@ -187,7 +186,7 @@ class XmlParser {
 
         // struct local para armazenar o contexto de cada tag
         struct Context {
-            XmlNode node;
+            XmlTree node;
             std::string::iterator contentBegin;
         };
 
@@ -203,41 +202,55 @@ class XmlParser {
                     std::string::iterator contentEnd = iter - 1;
                     iter++;
 
-                    std::string identifier = readIdentifier(&iter);
+                    std::string identifier = readIdentifier(iter);
+                    // se for uma tag de fechamento e a pilha estiver vazia
+                    // ou o identificador da tag de fechamento não condiz com
+                    // a tag no topo da pilha, significa que o arquivo xml está
+                    // mal formado
                     if (stack.empty() || identifier != stack.top().node.getIdentifier()) {
                         throw std::runtime_error("Invalid XML");
                     }
 
+                    // recupera o contexto da tag atual
                     Context current = stack.pop();
                     std::string content(readContent(current.contentBegin, contentEnd));
                     current.node.setContent(content);
+                    // se após desempilhar a pilha ficar vazia, significa que
+                    // a tag desempilhada é a mais externa, indicando que é a raíz
                     if (stack.empty()){
                         root = current.node;
                     } else {
+                        // caso contrário, adiciona a tag atual na lista de filhos
+                        // da tag do topo, que é pai da atual
                         stack.top().node.addChild(current.node);
                     }
                 } else {
-                    std::string identifier = readIdentifier(&iter);
-                    stack.push({XmlNode(identifier), ++iter});
+                    // se for uma tag de abertura, apenas empilha-a com
+                    // um ponteiro para o início do seu conteúdo
+                    std::string identifier = readIdentifier(iter);
+                    stack.push({XmlTree(identifier), ++iter});
                     continue;
                 }
             }
             iter++;
         }
 
+        // se ao final da leitura do arquivo a pilha não estiver vazia,
+        // o arquivo xml está mal formado
         if (!stack.empty()) {
             throw std::runtime_error("Invalid XML");
         }
 
+        // retorna a raíz (caso nao deu pra entender)
         return root;
     }
 
   private:
-    static std::string readIdentifier(std::string::iterator* iter) {
+    static std::string readIdentifier(std::string::iterator& iter) {
         std::string identifier{""};
-        while (**iter != '>') {
-            identifier += **iter;
-            (*iter)++;
+        while (*iter != '>') {
+            identifier += *iter;
+            iter++;
         }
         return identifier;
     }
@@ -283,6 +296,8 @@ class Solver {
                     continue;
                 }
                 if (matrix[newPos.x][newPos.y] == 1) {
+                    // marca a posição empilhada como 0 para não ser empilhada novamente
+                    // futuramente
                     matrix[newPos.x][newPos.y] = 0;
                     totalArea++;
                     cellsToVisit.push({newPos.x, newPos.y});
@@ -305,7 +320,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::string xmlPath = argv[1];
-    XmlParser::XmlTree xml;
+    XmlTree xml;
     try {
         xml = XmlParser::parse(xmlPath);
     }
