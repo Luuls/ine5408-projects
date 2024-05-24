@@ -6,7 +6,8 @@ Este projeto consiste na utilização de estruturas lineares, vistas até o mome
 
 ## **Primeiro problema**: validação de arquivo XML
 
-Para esta parte, pede-se exclusivamente a verificação de aninhamento e fechamento das marcações (tags) no arquivo XML (qualquer outra fonte de erro pode ser ignorada). Se houver um erro de aninhamento, deve se impresso <span style="color: red">erro</span> na tela. Um identificador constitui uma marcação entre os caracteres <span style="color: pink;">&lt</span> e <span style="color: pink;">&gt</span>, podendo ser de abertura (por exemplo: <span style="color: pink;">&ltcenario&gt</span>) ou de fechamento com uma <span style="color: pink;">/</span> antes do identificador (por exemplo: <span style="color: pink;">&lt/cenario&gt</span>). Como apresentando em sala de aula, o algoritmo para resolver este problema é baseado em pilha (<span style="color: red">LIFO</span>):
+Para esta parte, pede-se exclusivamente a verificação de aninhamento e fechamento das marcações (tags) no arquivo XML (qualquer outra fonte de erro pode ser ignorada). Se houver um erro de aninhamento, deve se impresso \<erro\> na tela. Um identificador constitui uma marcação entre os caracteres \<e\> <span>metodologias ageis acho meio parda tempo
+, podendo ser de abertura (por exemplo: \<cenario\>) ou de fechamento com uma / antes do identificador (por exemplo: \</cenario\>). Como apresentando em sala de aula, o algoritmo para resolver este problema é baseado em pilha (LIFO):
 
 - Ao encontrar uma marcação de abertura, empilha o identificador
 - Ao encontrar uma marcação de fechamento, verifica se o topo da pilha tem o mesmo identificador e desempilha. Aqui duas situações de erro podem ocorrer:
@@ -18,7 +19,7 @@ Para esta parte, pede-se exclusivamente a verificação de aninhamento e fechame
 
 ## **Segundo problema:** determinação de área do espaço que o robô deve limpar  
 
-Cada XML, contém matrizes binárias, com altura e largura, definidas respectivamente pelas marcações **<span style="color: pink">&ltaltura&gt</span>** e **<span style="color: pink;">&ltlargura&gt</span>**, e sequência dos pontos, em modo texto, na marcação **<span style="color: pink;">&ltmatriz&gt</span>**. Cada ponto corresponde a uma unidade de área, sendo 0 para não pertencente ou 1 para pertencente ao espaço que deve ser limpo, como passo mínimo do robô em uma de quatro direções possíveis (vizinhança-4),  Para cada uma dessas matrizes, pretende-se determinar a área (quantidade de pontos iguais a 1 na região do robô) que deve ser limpa, conforme a posição inicial, linha **<span style="color: pink">&ltx&gt</span>** e coluna **<span style="color: pink">&lty&gt</span>**, do robô (primeira linha e primeira coluna são iguais a zero). Para isso, seguem algumas definições importantes:
+Cada XML, contém matrizes binárias, com altura e largura, definidas respectivamente pelas marcações **\<altura\>** e **\<largura\>**, e sequência dos pontos, em modo texto, na marcação **\<matriz\>**. Cada ponto corresponde a uma unidade de área, sendo 0 para não pertencente ou 1 para pertencente ao espaço que deve ser limpo, como passo mínimo do robô em uma de quatro direções possíveis (vizinhança-4),  Para cada uma dessas matrizes, pretende-se determinar a área (quantidade de pontos iguais a 1 na região do robô) que deve ser limpa, conforme a posição inicial, linha **\<x\>** e coluna **\</span\>**, do robô (primeira linha e primeira coluna são iguais a zero). Para isso, seguem algumas definições importantes:
 
 - A **vizinhança-4** de um ponto na linha _**x**_ e coluna _**y**_, ou seja, na coordenada **(_x_,_y_)**, é um conjunto de pontos adjacentes nas coordenadas:
     - **(_x_-1, _y_)**
