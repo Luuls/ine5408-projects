@@ -16,10 +16,11 @@ public:
         unsigned int lineLength;
     };
 
-    RetrievalResult Retrieve(const std::string& word);
+    std::vector<std::string> getWordsWithPrefix(const std::string& prefix);
+    RetrievalResult retrieve(const std::string& word);
 
 private:
-    Trie* children; // array de Tries
+    Trie* children[26]; // array de Tries
     char letter;
     unsigned int dictPosition;
     unsigned int lineLength;
