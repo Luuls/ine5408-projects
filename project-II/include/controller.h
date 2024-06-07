@@ -12,6 +12,10 @@
 class Controller {
 public:
     Controller();
+    ~Controller();
+
+private:
+    std::string readFile(const std::string& filename);
 
 /* ----------------------------------
     métodos à serem determinados
