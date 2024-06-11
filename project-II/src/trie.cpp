@@ -2,7 +2,10 @@
 
 #include "../include/trie.h"
 
-Trie::Trie() {
+Trie::Trie() : letter(0), dictPosition(0), lineLength(0) {
+    for (int i = 0; i < 26; i++) {
+        children[i] = nullptr;
+    }
 }
 
 Trie::~Trie() {
