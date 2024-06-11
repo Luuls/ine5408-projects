@@ -6,6 +6,11 @@ Trie::Trie() {
 }
 
 Trie::~Trie() {
+    for (int i = 0; i < 26; i++) {
+        if (children[i] != nullptr) {
+            delete children[i];
+        }
+    }
 }
 
 Trie::RetrievalResult Trie::retrieve(const std::string& word) {
