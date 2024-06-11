@@ -14,6 +14,8 @@ public:
 
     Trie& getTrie() { return this->trie; }
 
+    void buildTrie(const std::string& filename);
+
 private:
     std::string readFile(const std::string& filename);
     std::string readWord(std::string::iterator& it);
