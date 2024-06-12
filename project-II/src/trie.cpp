@@ -9,6 +9,11 @@ Trie::Trie() : letter(0), dictPosition(0), lineLength(0) {
 }
 
 Trie::~Trie() {
+    for (int i = 0; i < 26; i++) {
+        if (children[i] != nullptr) {
+            delete children[i];
+        }
+    }
 }
 
 Trie::RetrievalResult Trie::retrieve(const std::string& word) {
