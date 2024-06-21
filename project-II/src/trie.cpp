@@ -48,9 +48,8 @@ void Trie::insert(const std::string& word, unsigned int dictPosition, unsigned i
         child->setDictPosition(dictPosition);
         child->setLineLength(lineLength);
     }
-    else {
-        child->insert(word.substr(1), dictPosition, lineLength);
-    }
+
+    child->insert(word.substr(1), dictPosition, lineLength);
 }
 
 void Trie::setLetter(char letter) { this->letter = letter; }

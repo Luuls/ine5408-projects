@@ -33,6 +33,17 @@ public:
     void setLineLength(unsigned int lineLength);
     unsigned int getLineLength() const;
 
+    void print(const std::string& prefix = "") {
+        if (letter != 0) { // Avoid printing the root node's letter
+            std::cout << prefix << letter << " (" << dictPosition << ", " << lineLength << ")\n";
+        }
+        for (auto child : children) {
+            if (child) {
+                child->print(prefix + "--");
+            }
+        }
+    }
+
 private:
     Trie* children[26]; // array de Tries
     char letter;
