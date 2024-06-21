@@ -1,8 +1,11 @@
+<<<<<<< Updated upstream
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <iterator>
 
+=======
+>>>>>>> Stashed changes
 #include "trie.h"
 #include "controller.h"
 
