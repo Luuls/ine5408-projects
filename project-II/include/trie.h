@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -43,6 +42,9 @@ public:
             }
         }
     }
+
+private:
+    void getWords( std::string currentWord, std::vector<std::string>& words);
 
 private:
     Trie* children[26]; // array de Tries

@@ -28,6 +28,50 @@ Trie::RetrievalResult Trie::retrieve(const std::string& word) {
 }
 
 std::vector<std::string> Trie::getWordsWithPrefix(const std::string& prefix) {
+    std::vector<std::string> words;
+
+    if (prefix.empty()) {
+        // define-se que a string vazia é prefixo de qualquer palavra
+        // portanto, a Trie retorna todas as suas palavras
+        this->getWords("", words);
+        return words;
+    }
+
+    Trie* child = this;
+    if (prefix.size() > 1) {
+        for (const auto& letter : prefix.substr(0, prefix.size() - 1)) {
+            child = child->children[letter - 'a'];
+            if (child == nullptr) {
+                return words;
+            }
+        }
+    }
+
+    char lastLetter = prefix.at(prefix.size() - 1);
+    child = child->children[lastLetter - 'a'];
+    if (child != nullptr) {
+        if (child->lineLength != 0) {
+            words.push_back(prefix);
+        }
+    }
+    else {
+        return words;
+    }
+
+    child->getWords(prefix, words);
+    return words;
+}
+
+void Trie::getWords(std::string currentWord, std::vector<std::string>& words) {
+    for (const auto& child : this->children) {
+        if (child != nullptr) {
+            std::string nextWord = currentWord + child->getLetter();
+            if (child->getLineLength() != 0) {
+                words.push_back(nextWord);
+            }
+            child->getWords(nextWord, words);
+        }
+    }
 }
 
 void Trie::insert(const std::string& word, unsigned int dictPosition, unsigned int lineLength) {
