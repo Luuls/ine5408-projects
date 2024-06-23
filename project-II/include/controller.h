@@ -12,15 +12,11 @@ public:
 
     void buildTrie(const std::string& filename);
 
-    Trie& getTrie() { return this->trie; }
+    Trie& getTrie();
 
 private:
     std::string readFile(const std::string& filename);
     std::string readWord(std::string::iterator& it);
-
-/* ----------------------------------
-    métodos à serem determinados
----------------------------------- */
 
 private:
     Trie trie;

@@ -41,6 +41,8 @@ void Controller::buildTrie(const std::string& filename) {
     }
 }
 
+Trie& Controller::getTrie() { return this->trie; }
+
 std::string Controller::readWord(std::string::iterator& it) {
     std::string word{""};
     it++; // pula o '['
