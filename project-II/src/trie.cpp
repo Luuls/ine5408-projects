@@ -25,6 +25,15 @@ Trie::~Trie() {
 }
 
 Trie::RetrievalResult Trie::retrieve(const std::string& word) {
+    Trie* child = this;
+    for (const auto& letter : word) {
+        child = child->children[letter - 'a'];
+        if (child == nullptr) {
+            return { 0, 0 };
+        }
+    }
+
+    return { child->getDictPosition(), child->getLineLength() };
 }
 
 std::vector<std::string> Trie::getWordsWithPrefix(const std::string& prefix) {

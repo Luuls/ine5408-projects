@@ -12,7 +12,6 @@ public:
     ~Trie();
 
     struct RetrievalResult {
-        bool found;
         unsigned int dictPosition;
         unsigned int lineLength;
     };
