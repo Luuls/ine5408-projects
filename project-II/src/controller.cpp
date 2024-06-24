@@ -41,6 +41,25 @@ void Controller::buildTrie(const std::string& filename) {
     }
 }
 
+Trie& Controller::getTrie() { return this->trie; }
+
+void Controller::problem1() {
+    std::string word;
+    while (true) {  // leitura das palavras ate encontrar "0"
+        std::cin >> word;
+        if (word.compare("0") == 0) {
+            break;
+        }
+        std::vector<std::string> prefixed(this->trie.getWordsWithPrefix(word));
+        if (prefixed.size() > 0) {
+            std::cout << word << " is prefix of " << prefixed.size() << " words\n";
+        }
+        else {
+            std::cout << word << " is not prefix\n";
+        }
+    }
+}
+
 std::string Controller::readWord(std::string::iterator& it) {
     std::string word{""};
     it++; // pula o '['
