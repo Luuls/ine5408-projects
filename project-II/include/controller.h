@@ -14,7 +14,7 @@ public:
 
     Trie& getTrie();
 
-    void problem1();
+    void handleInput();
 
 private:
     std::string readFile(const std::string& filename);

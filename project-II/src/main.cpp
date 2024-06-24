@@ -3,13 +3,13 @@
 #include "controller.h"
 
 
-int main(int argc, char* argv[]) {
+int main() {
     std::string filename;
     std::cin >> filename;
 
     Controller controller;
     controller.buildTrie(filename);
-    controller.problem1();
+    controller.handleInput();
 
     return 0;
 }

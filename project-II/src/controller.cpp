@@ -43,7 +43,7 @@ void Controller::buildTrie(const std::string& filename) {
 
 Trie& Controller::getTrie() { return this->trie; }
 
-void Controller::problem1() {
+void Controller::handleInput() {
     std::string word;
     while (true) {  // leitura das palavras ate encontrar "0"
         std::cin >> word;
@@ -56,6 +56,13 @@ void Controller::problem1() {
         }
         else {
             std::cout << word << " is not prefix\n";
+        }
+
+        Trie::RetrievalResult result = this->trie.retrieve(word);
+        if (result.lineLength != 0) {
+            std::cout << word
+                << " is at (" << result.dictPosition << ','
+                << result.lineLength << ")\n";
         }
     }
 }
