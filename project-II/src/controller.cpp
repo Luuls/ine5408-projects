@@ -11,7 +11,7 @@ std::string Controller::readFile(const std::string& fileName) {
     std::stringstream buffer;
     std::string fileContent;
 
-    // desta maneira, retorna o conteúdo do arquivo incluindo
+    // desta maneira, retorna o conteúdo do arquivo, incluindo
     // os caracteres de quebra de linha ('\n')
     if (file.is_open()) {
         buffer << file.rdbuf();
@@ -30,6 +30,8 @@ void Controller::buildTrie(const std::string& filename) {
     while (mainIterator != fileContent.end()) {
         auto lineBegin = mainIterator;
         std::string word = this->readWord(mainIterator);
+
+        // avança o iterador para o fim da linha
         while (*mainIterator != '\n') {
             mainIterator++;
         }
@@ -37,6 +39,7 @@ void Controller::buildTrie(const std::string& filename) {
         std::size_t lineLength = mainIterator - lineBegin;
         std::size_t dictPosition = lineBegin - fileContent.begin();
         this->trie.insert(word, dictPosition, lineLength);
+
         mainIterator++; // vai para o início da linha seguinte
     }
 }
