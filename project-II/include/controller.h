@@ -14,6 +14,8 @@ public:
 
     Trie& getTrie();
 
+    void problem1();
+
 private:
     std::string readFile(const std::string& filename);
     std::string readWord(std::string::iterator& it);
